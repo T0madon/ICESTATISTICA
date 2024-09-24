@@ -1,0 +1,46 @@
+        # Função para comparar os nomes ignorando os acentos
+        def comparar_nomes(nome_a, nome_b):
+            return unidecode.unidecode(str(nome_a).lower()) == unidecode.unidecode(str(nome_b).lower())
+
+        # Leitura das planilhas
+        colaboradores_df = pd.read_excel("COLABORADORES_SEXATAS.xlsx")
+        efetivos_df = pd.read_excel("Efetivos_SEXATAS.xlsx")
+        tide_df = pd.read_excel("TIDE_SEXATAS.xlsx")
+
+        # Extrair os valores da coluna C, ignorando os valores que não são strings
+        colaboradores_nomes = [str(nome) for nome in colaboradores_df.iloc[:, 2].tolist() if isinstance(nome, str)]
+        efetivos_nomes = [str(nome) for nome in efetivos_df.iloc[:, 2].tolist() if isinstance(nome, str)]
+        tide_nomes = [str(nome) for nome in tide_df.iloc[:, 2].tolist() if isinstance(nome, str)]
+
+        # Verificar se o nome está presente nas listas de nomes
+        status = ''
+        tide = ''
+
+        if any(comparar_nomes(nome, n) for n in colaboradores_nomes):
+            status = 'COLABORADOR'
+        elif any(comparar_nomes(nome, n) for n in efetivos_nomes):
+            status = 'EFETIVO'
+        else:
+            status = 'DESCONHECIDO'
+
+        if any(comparar_nomes(nome, n) for n in tide_nomes):
+            tide = 'sim'
+        else:
+            tide = 'nao'
+
+        #print("Status para", nome, ":", status)
+        #print("Tide para", nome, ":", tide)
+        status = status[:12]
+        cursor.execute("""  
+            UPDATE professores
+            SET status = %s
+            WHERE nome = %s;
+        """, (status, nome))
+        connection.commit()
+        tide = tide[:12]
+        cursor.execute("""  
+            UPDATE professores
+            SET tide = %s
+            WHERE nome = %s;
+        """, (tide, nome))
+        connection.commit()

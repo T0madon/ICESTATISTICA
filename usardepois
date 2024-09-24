@@ -1,0 +1,46 @@
+import os
+import pandas as pd
+import unicodedata
+
+# Função para remover acentos
+# Função para remover acentos
+def remover_acentos1(txt):
+    if isinstance(txt, str):  # Verifica se o valor é uma string
+        return ''.join(c for c in unicodedata.normalize('NFD', txt) if unicodedata.category(c) != 'Mn')
+    else:
+        return ''  # Retorna uma string vazia se o valor não for uma string
+
+
+# Diretório das planilhas
+diretorio = "TIDE"
+
+# Nome a ser procurado
+nome = "Rosane Falate"
+
+# Inicializa a variável tide como 'nao'
+tide = 'nao'
+
+# Lista para armazenar os nomes das planilhas
+nomes_planilhas = []
+
+# Verifica se o diretório existe
+if os.path.exists(diretorio):
+    # Percorre os arquivos no diretório
+    for arquivo in os.listdir(diretorio):
+        # Verifica se o arquivo é uma planilha
+        if arquivo.endswith(".xlsx") or arquivo.endswith(".xls"):
+            # Lê a planilha
+            planilha = pd.read_excel(os.path.join(diretorio, arquivo), header=2)  # Começa a ler da terceira linha
+            # Remove acentos dos nomes na planilha
+            planilha['nm_pessoa_completo'] = planilha['nm_pessoa_completo'].apply(remover_acentos1)
+            # Adiciona os nomes das planilhas à lista
+            nomes_planilhas.extend(planilha['nm_pessoa_completo'].tolist())
+
+# Remove acentos do nome a ser procurado
+nome_sem_acentos = remover_acentos(nome)
+
+# Verifica se o nome está presente nas planilhas
+if nome_sem_acentos in nomes_planilhas:
+    tide = 'sim'
+
+print("Tide:", tide)
